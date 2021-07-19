@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw04_lru_cache
+module github.com/santonov10/otus_hw/hw01_hello_otus
 
 go 1.16
 
