@@ -1,7 +1,5 @@
 package hw04lrucache
 
-import "fmt"
-
 type List interface {
 	Len() int
 	Front() *ListItem
@@ -21,28 +19,20 @@ type ListItem struct {
 var _ List = &list{}
 
 type list struct {
-	indexListItems map[*ListItem]bool
-	firstListItem  *ListItem
-	lastListItem   *ListItem
+	len           int
+	firstListItem *ListItem
+	lastListItem  *ListItem
 }
 
 func (l *list) Len() int {
-	return len(l.indexListItems)
+	return l.len
 }
 
 func (l *list) Front() *ListItem {
-	if l.Len() == 0 {
-		return nil
-	}
-
 	return l.firstListItem
 }
 
 func (l *list) Back() *ListItem {
-	if l.Len() == 0 {
-		return nil
-	}
-
 	return l.lastListItem
 }
 
@@ -55,7 +45,7 @@ func (l *list) PushFront(v interface{}) *ListItem {
 	secondListItem.Prev = newListItem
 	l.firstListItem = newListItem
 	l.firstListItem.Next = secondListItem
-	l.indexListItems[newListItem] = true
+	l.len++
 	return newListItem
 }
 
@@ -68,7 +58,7 @@ func (l *list) PushBack(v interface{}) *ListItem {
 	preLastListItem.Next = newListItem
 	l.lastListItem = newListItem
 	l.lastListItem.Prev = preLastListItem
-	l.indexListItems[newListItem] = true
+	l.len++
 	return newListItem
 }
 
@@ -76,12 +66,11 @@ func (l *list) pushToEmptyList(v interface{}) *ListItem {
 	newListItem := NewListItem(v)
 	l.firstListItem = newListItem
 	l.lastListItem = newListItem
-	l.indexListItems[newListItem] = true
+	l.len = 1
 	return newListItem
 }
 
 func (l *list) Remove(i *ListItem) {
-	l.panicIfNotExist(i)
 	if l.lastListItem == i {
 		l.lastListItem = i.Prev
 	}
@@ -95,33 +84,18 @@ func (l *list) Remove(i *ListItem) {
 		i.Next.Prev = i.Prev
 	}
 
-	delete(l.indexListItems, i)
+	l.len--
 }
 
 func (l *list) MoveToFront(i *ListItem) {
-	l.panicIfNotExist(i)
 	if l.firstListItem != i {
 		l.Remove(i)
 		l.PushFront(i)
 	}
 }
 
-func (l *list) panicIfNotExist(i *ListItem) {
-	if !l.IsItemExist(i) {
-		errorString := fmt.Sprintf("нет такого элемента в списке: %v", i)
-		panic(errorString)
-	}
-}
-
-func (l *list) IsItemExist(i *ListItem) bool {
-	_, ok := l.indexListItems[i]
-	return ok
-}
-
 func NewList() List {
-	l := new(list)
-	l.indexListItems = make(map[*ListItem]bool)
-	return l
+	return new(list)
 }
 
 func NewListItem(v interface{}) *ListItem {

@@ -53,9 +53,8 @@ func TestList(t *testing.T) {
 		l := NewList()
 
 		item := l.PushFront(10) // [10]
-		l.Remove(item)
+		l.Remove(item)          // []
 		require.Equal(t, 0, l.Len())
-		require.Panics(t, func() { l.Remove(item) }, "паника")
 
 		l.PushFront(10)    // [10]
 		l.PushFront(20)    // [20,10]
