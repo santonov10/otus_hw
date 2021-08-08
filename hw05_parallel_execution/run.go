@@ -67,7 +67,7 @@ func Run(tasks []Task, n, m int) error {
 	return resErr
 }
 
-func calcChunkParams(ttlCnt int, chunkCnt int) (len int, cnt int) {
+func calcChunkParams(ttlCnt int, chunkCnt int) (chkLen int, chkCnt int) {
 	if ttlCnt < chunkCnt {
 		return 1, ttlCnt
 	}

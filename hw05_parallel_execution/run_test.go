@@ -99,6 +99,8 @@ func TestRun(t *testing.T) {
 		require.NoError(t, err)
 
 		err = Run(nilTasks, 0, -6)
+		require.NoError(t, err)
+
 		tasksCount := 49
 		tasks := make([]Task, 0, tasksCount)
 
