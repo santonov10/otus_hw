@@ -67,4 +67,61 @@ func TestRun(t *testing.T) {
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
+
+	t.Run("maxErrorsCount = 0 и не кратное количество задач/потоков", func(t *testing.T) {
+		tasksCount := 49
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+
+			tasks = append(tasks, func() error {
+				time.Sleep(taskSleep)
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		workersCount := 23
+		maxErrorsCount := 0
+
+		err := Run(tasks, workersCount, maxErrorsCount)
+		require.NoError(t, err)
+
+		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
+	})
+
+	t.Run("проверка нулевых/отрицательных параметров", func(t *testing.T) {
+		var nilTasks []Task
+		err := Run(nilTasks, 50, 50)
+		require.NoError(t, err)
+
+		err = Run(nilTasks, 0, -6)
+		tasksCount := 49
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+
+			tasks = append(tasks, func() error {
+				time.Sleep(taskSleep)
+				atomic.AddInt32(&runTasksCount, 1)
+				return nil
+			})
+		}
+
+		workersCount := -5
+		maxErrorsCount := -10
+		err = Run(tasks, workersCount, maxErrorsCount)
+		require.NoError(t, err)
+
+		workersCount = 0
+		maxErrorsCount = 0
+		err = Run(tasks, workersCount, maxErrorsCount)
+		require.NoError(t, err)
+	})
 }
