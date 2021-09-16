@@ -20,19 +20,16 @@ type Stage func(in In) (out Out)
 
 /*Не работает такой вариант как в видео уроке по разбору,
 не проходит по времени: Error: "879242900" is not less than "850000000"
-наверное это потому, что код выполняется последовательно (не понятно почему в видео уроке такое работает)
-
-полный код как в видео уроке с done оберткой оставляет только 1 значение в канале {102}.
 */
 /*func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := in
 	for _,s := range stages {
-		out = s(out)
+		out = s(wrapWithDone(done,out))
 	}
 	return out
 }*/
 
-// ExecutePipeline свой вариант решения задачи (попытка реализации fanin fanout).
+// ExecutePipeline свой вариант решения задачи (что-то вроде fanin fanout с сортировкой).
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := make(Bi)
 
@@ -121,14 +118,16 @@ func wrapWithDone(done In, in In) Out {
 		default:
 		}
 
-		select {
-		case <-done:
-			return
-		case v, ok := <-in:
-			if !ok {
+		for {
+			select {
+			case <-done:
 				return
+			case v, ok := <-in:
+				if !ok {
+					return
+				}
+				out <- v
 			}
-			out <- v
 		}
 	}()
 	return out
