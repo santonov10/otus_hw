@@ -90,4 +90,65 @@ func TestPipeline(t *testing.T) {
 		require.Len(t, result, 0)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
+
+	t.Run("без стадий", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]string, 0, 10)
+		for s := range ExecutePipeline(in, nil, nil) {
+			result = append(result, strconv.Itoa(s.(int)))
+		}
+
+		require.Equal(t, []string{"1", "2", "3", "4", "5"}, result)
+	})
+
+	t.Run("без данных", func(t *testing.T) {
+		in := make(Bi)
+
+		go func() {
+			close(in)
+		}()
+
+		result := make([]string, 0, 10)
+		for s := range ExecutePipeline(in, nil, stages...) {
+			result = append(result, strconv.Itoa(s.(int)))
+		}
+
+		require.Equal(t, []string{}, result)
+	})
+
+	t.Run("stages with nil", func(t *testing.T) {
+		in := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		stages := []Stage{
+			g("Dummy", func(v interface{}) interface{} { return v }),
+			g("Multiplier (* 2)", func(v interface{}) interface{} { return v.(int) * 2 }),
+			g("Adder (+ 100)", func(v interface{}) interface{} { return v.(int) + 100 }),
+			nil,
+			g("Stringifier", func(v interface{}) interface{} { return strconv.Itoa(v.(int)) }),
+		}
+
+		go func() {
+			for _, v := range data {
+				in <- v
+			}
+			close(in)
+		}()
+
+		result := make([]string, 0, 10)
+		for s := range ExecutePipeline(in, nil, stages...) {
+			result = append(result, s.(string))
+		}
+
+		require.Equal(t, []string{"102", "104", "106", "108", "110"}, result)
+	})
 }
