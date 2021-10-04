@@ -1,66 +1,69 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
-	"fmt"
+	"bufio"
+	"errors"
 	"io"
-	"io/ioutil"
-	"regexp"
 	"strings"
+
+	"github.com/mailru/easyjson/jlexer"
 )
 
+//easyjson:json
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	// ID       int
+	// Name     string
+	// Username string
+	Email string
+	// Phone    string
+	// Password string
+	// Address  string
+}
+
+func (u *User) getEmailDomain() string {
+	return strings.ToLower(after(u.Email, "@"))
+}
+
+func after(value string, a string) string {
+	pos := strings.LastIndex(value, a)
+	if pos == -1 {
+		return ""
+	}
+	adjustedPos := pos + len(a)
+	if adjustedPos >= len(value) {
+		return ""
+	}
+	return value[adjustedPos:]
 }
 
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	u, err := getUsers(r)
-	if err != nil {
-		return nil, fmt.Errorf("get users error: %w", err)
-	}
-	return countDomains(u, domain)
-}
-
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
-		}
-		result[i] = user
-	}
-	return
-}
-
-func countDomains(u users, domain string) (DomainStat, error) {
 	result := make(DomainStat)
-
-	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
+	suf := "." + domain
+	bufReader := bufio.NewReader(r)
+	var user User
+	for {
+		// line, err := bufReader.ReadString('\n') // не проходит по памяти...
+		line, _, err := bufReader.ReadLine() // наверное, нужно больше логики с получением второго параметра и его проверкой
+		lexer := jlexer.Lexer{
+			Data:              line,
+			UseMultipleErrors: false,
+		}
 		if err != nil {
-			return nil, err
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return result, err
 		}
 
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+		user.UnmarshalEasyJSON(&lexer)
+		if lexer.Error() != nil {
+			return result, lexer.Error()
+		}
+
+		if strings.HasSuffix(user.Email, suf) {
+			result[user.getEmailDomain()]++
 		}
 	}
 	return result, nil
