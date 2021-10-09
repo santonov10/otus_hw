@@ -26,8 +26,7 @@ func main() {
 	telNetClient := NewTelnetClient(net.JoinHostPort(address, port), *timeout, os.Stdin, os.Stdout)
 	defer telNetClient.Close()
 
-	err := telNetClient.Connect()
-	if err != nil {
+	if err := telNetClient.Connect(); err != nil {
 		log.Panic(err)
 	}
 
