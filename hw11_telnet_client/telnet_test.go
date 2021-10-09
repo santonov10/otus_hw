@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Виснет для windows.
 func TestTelnetClient(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		l, err := net.Listen("tcp", "127.0.0.1:")
