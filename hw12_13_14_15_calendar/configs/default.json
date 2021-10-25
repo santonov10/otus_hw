@@ -1,0 +1,12 @@
+{
+  "storage": {
+    "driver_name": "postgresql",
+    "dsn": "postgres://postgres:@localhost:5432/otus_hw?sslmode=disable"
+  },
+  "logger": {
+    "level": "INFO"
+  },
+  "http": {
+    "port": "8080"
+  }
+}

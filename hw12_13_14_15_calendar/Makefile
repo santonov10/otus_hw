@@ -1,3 +1,5 @@
+#$ sudo apt-get -y install postgresql
+#$sudo systemctl start postgresql
 BIN := "./bin/calendar"
 DOCKER_IMG="calendar:develop"
 
