@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"os/signal"
 	"syscall"
 
@@ -27,10 +26,8 @@ func main() {
 		return
 	}
 
-	config, err := config.NewConfig(configFile)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	config.SetFilePath(configFile)
+	config := config.Get()
 	_ = config
 
 	server := internalhttp.NewServer()

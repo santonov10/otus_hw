@@ -34,3 +34,6 @@ lint: install-lint-deps
 	golangci-lint run ./...
 
 .PHONY: build run build-img run-img version test lint
+
+make migratePG:
+	cd ./migtations;  goose postgres "user=postgres dbname=otus_hw sslmode=disable" up

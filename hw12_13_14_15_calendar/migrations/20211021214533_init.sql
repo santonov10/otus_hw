@@ -12,7 +12,7 @@ create table event
             primary key,
     title         varchar(256),
     "Description" text,
-    "UserId"      uuid,
+    "UserID"      uuid,
     "StartTime"   timestamp,
     "EndTime"     timestamp
 );

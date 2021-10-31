@@ -3,11 +3,11 @@ package internalhttp
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,12 +20,7 @@ func NewServer() *Server {
 	r := gin.Default()
 	mainGroup := r.Group("/")
 
-	f, err := os.Create("gin.log")
-	if err != nil {
-		gin.DefaultWriter = io.MultiWriter(f)
-	}
-
-	mainGroup.Use(gin.LoggerWithFormatter(LoggingMiddleware))
+	mainGroup.Use(LoggingMiddleware(logger.Get()))
 	{
 		mainGroup.GET("/", mainPage)
 	}

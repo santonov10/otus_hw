@@ -2,8 +2,15 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"log"
+	"sync"
+)
+
+var (
+	config         Config
+	once           sync.Once
+	configFilePath = "./configs/default.json"
 )
 
 type Config struct {
@@ -25,16 +32,20 @@ type HTTPConf struct {
 	Port string `json:"port"`
 }
 
-func NewConfig(filePath string) (Config, error) {
-	jsonString, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return Config{}, fmt.Errorf("config create:%w", err)
-	}
+func SetFilePath(filePath string) {
+	configFilePath = filePath
+}
 
-	conf := Config{}
-	if err = json.Unmarshal(jsonString, &conf); err != nil {
-		return Config{}, fmt.Errorf("config create:%w", err)
-	}
+func Get() *Config {
+	once.Do(func() {
+		jsonString, err := ioutil.ReadFile(configFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	return conf, nil
+		if err = json.Unmarshal(jsonString, &config); err != nil {
+			log.Fatal(err)
+		}
+	})
+	return &config
 }

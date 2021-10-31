@@ -2,12 +2,13 @@ package postgresql
 
 import (
 	"context"
-	"testing"
-	"time"
-
+	_ "github.com/jackc/pgx/stdlib"
+	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/config"
 	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/db"
 	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/models"
 	"github.com/stretchr/testify/require"
+	"testing"
+	"time"
 )
 
 var newEvent = models.Event{
@@ -20,7 +21,10 @@ var newEvent = models.Event{
 }
 
 func TestEventPostgresqlStorage(t *testing.T) {
-	db, _ := db.PostgreSQLConnectFromConfig(context.TODO(), "../../../../configs/default.json")
+	config.SetFilePath("../../../../configs/default.json")
+	db, err := db.PostgreSQLConnectFromConfig(context.TODO())
+
+	require.NoError(t, err)
 
 	ctx := context.TODO()
 	eventStorage := NewEventPostgresqlStorage(db)

@@ -5,16 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/config"
 )
 
-func PostgreSQLConnectFromConfig(ctx context.Context, configFile string) (*sql.DB, error) {
-	config, err := config.NewConfig(configFile)
-	if err != nil {
-		log.Fatalln(err)
-	}
+func PostgreSQLConnectFromConfig(ctx context.Context) (*sql.DB, error) {
+	config := config.Get()
 	if config.Storage.DriverName == "postgresql" {
 		return PostgreSQLConnect(ctx, config.Storage.Dsn)
 	}
@@ -23,6 +19,10 @@ func PostgreSQLConnectFromConfig(ctx context.Context, configFile string) (*sql.D
 
 func PostgreSQLConnect(ctx context.Context, dsn string) (*sql.DB, error) {
 	db, err := sql.Open("pgx", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load driver: %w", err)
+	}
+	err = db.Ping()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load driver: %w", err)
 	}

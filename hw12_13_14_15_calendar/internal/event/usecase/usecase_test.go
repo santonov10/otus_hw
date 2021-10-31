@@ -5,6 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/logger"
+
 	eventPck "github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/event"
 	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/event/repository/localstorage"
 	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/models"
@@ -54,12 +57,14 @@ var events = []models.Event{
 	},
 }
 
+var testLogger = getLogger()
+
 func TestEventUseCase_DayEvents(t *testing.T) {
 	from := time.Date(2021, 10, 22, 0, 0, 0, 0, time.UTC)
 
 	repo := localstorage.NewEventLocalStorage()
 
-	eventUC := NewEventUseCase(repo)
+	eventUC := NewEventUseCase(repo, testLogger)
 	found, err := eventUC.DayEvents(from)
 
 	require.ErrorIs(t, err, eventPck.ErrEventNotFound)
@@ -76,7 +81,7 @@ func TestEventUseCase_WeakEvents(t *testing.T) {
 
 	repo := localstorage.NewEventLocalStorage()
 
-	eventUC := NewEventUseCase(repo)
+	eventUC := NewEventUseCase(repo, testLogger)
 	found, err := eventUC.WeakEvents(from)
 
 	require.ErrorIs(t, err, eventPck.ErrEventNotFound)
@@ -93,7 +98,7 @@ func TestEventUseCase_MonthEvents(t *testing.T) {
 
 	repo := localstorage.NewEventLocalStorage()
 
-	eventUC := NewEventUseCase(repo)
+	eventUC := NewEventUseCase(repo, testLogger)
 	found, err := eventUC.WeakEvents(from)
 
 	require.ErrorIs(t, err, eventPck.ErrEventNotFound)
@@ -111,7 +116,7 @@ func TestEventUseCase_EventForPeriod(t *testing.T) {
 
 	repo := localstorage.NewEventLocalStorage()
 
-	eventUC := NewEventUseCase(repo)
+	eventUC := NewEventUseCase(repo, testLogger)
 	found, err := eventUC.WeakEvents(from)
 
 	require.ErrorIs(t, err, eventPck.ErrEventNotFound)
@@ -128,4 +133,10 @@ func setUsersInRepo(repo eventPck.Repository) {
 		ev := ev
 		repo.Create(context.TODO(), &ev)
 	}
+}
+
+func getLogger() *logger.Logger {
+	config.SetFilePath("../../../configs/default.json")
+	logger.UseFile(false)
+	return logger.Get()
 }

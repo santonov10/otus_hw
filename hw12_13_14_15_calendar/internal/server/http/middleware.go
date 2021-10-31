@@ -1,22 +1,32 @@
 package internalhttp
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/santonov10/otus_hw/hw12_13_14_15_calendar/internal/logger"
 )
 
-func LoggingMiddleware(param gin.LogFormatterParams) string {
-	return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
-		param.ClientIP,
-		param.TimeStamp.Format(time.RFC1123),
-		param.Method,
-		param.Path,
-		param.Request.Proto,
-		param.StatusCode,
-		param.Latency,
-		param.Request.UserAgent(),
-		param.ErrorMessage,
-	)
+func LoggingMiddleware(logger *logger.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		path := c.Request.URL.Path
+		raw := c.Request.URL.RawQuery
+
+		if raw != "" {
+			path = path + "?" + raw
+		}
+
+		logger.Info().Msgf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			c.ClientIP(),
+			time.Now().Format(time.RFC1123),
+			c.Request.Method,
+			path,
+			c.Request.Proto,
+			c.Writer.Status(),
+			time.Now().Sub(start),
+			c.Request.UserAgent(),
+			c.Errors.ByType(gin.ErrorTypePrivate).String(),
+		)
+	}
 }

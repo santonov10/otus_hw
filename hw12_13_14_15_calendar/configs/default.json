@@ -4,7 +4,7 @@
     "dsn": "postgres://postgres:@localhost:5432/otus_hw?sslmode=disable"
   },
   "logger": {
-    "level": "INFO"
+    "level": "info"
   },
   "http": {
     "port": "8080"
