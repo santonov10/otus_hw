@@ -1,3 +1,5 @@
+#$ sudo apt-get -y install postgresql
+#$sudo systemctl start postgresql
 BIN := "./bin/calendar"
 DOCKER_IMG="calendar:develop"
 
@@ -32,3 +34,6 @@ lint: install-lint-deps
 	golangci-lint run ./...
 
 .PHONY: build run build-img run-img version test lint
+
+make migratePG:
+	cd ./migtations;  goose postgres "user=postgres dbname=otus_hw sslmode=disable" up
